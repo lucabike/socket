@@ -8,32 +8,32 @@ SERVER_PORT=22224 # porta del server
 def ricevi_comandi(sock_service, addr_client):
     print("avviato")
     while True:
-            data=sock_service.recv(1024)
-            if not data: #se data è un vettore vuoto usciamo dal ciclo 
-                break
-            data=data.decode()
-            data=json.loads(data) # viene ritrasformato in dizionario se non non può essere ricevuto 
-            numero1=data['numero1'] #inserisce il numero 1
-            operazione=data['operazione']
-            numero2=data['numero2'] # inserisce il numero 2
-            ris=""
-            if operazione=="+": # se l'operazione da fare è +
-                ris=numero1+numero2
-            elif operazione=="-": # se l'operazione da fare è -
-                ris=numero1-numero2
-            elif operazione=="*": # se l'operazione da fare è *
-                ris=numero1*numero2
-            elif operazione=="/": # se l'operazione da fare è /
-                if numero2==0:
-                    ris="Impossibile dividere per 0"
-                else:
-                    ris=numero1/numero2
-            elif operazione=="%":
-                ris=numero1%numero2
+        data=sock_service.recv(1024)
+        if not data: #se data è un vettore vuoto usciamo dal ciclo 
+            break
+        data=data.decode()
+        data=json.loads(data) # viene ritrasformato in dizionario se non non può essere ricevuto 
+        numero1=data['numero1'] #inserisce il numero 1
+        operazione=data['operazione']
+        numero2=data['numero2'] # inserisce il numero 2
+        ris=""
+        if operazione=="+": # se l'operazione da fare è +
+            ris=numero1+numero2
+        elif operazione=="-": # se l'operazione da fare è -
+            ris=numero1-numero2
+        elif operazione=="*": # se l'operazione da fare è *
+            ris=numero1*numero2
+        elif operazione=="/": # se l'operazione da fare è /
+            if numero2==0:
+                ris="Impossibile dividere per 0"
             else:
-                ris="Operazione non riuscita"
-            ris=str(ris)
-            sock_service.sendall(ris.encode("UTF-8"))  # manda il vettore in risposta al client 
+                ris=numero1/numero2
+        elif operazione=="%":
+            ris=numero1%numero2
+        else:
+            ris="Operazione non riuscita"
+        ris=str(ris)
+        sock_service.sendall(ris.encode("UTF-8"))  # manda il vettore in risposta al client 
 
     sock_service.close()
 
@@ -51,9 +51,9 @@ def ricevi_connessioni(sock_listen):
 def avvia_server(indirizzo, porta):
     sock_listen=socket.socket()
     sock_listen.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    sock_listen.bind((SERVER_ADDRESS, SERVER_PORT))
+    sock_listen.bind((indirizzo, porta))
     sock_listen.listen(5)
-    print("Server in ascolto su %s." % str((SERVER_ADDRESS, SERVER_PORT)))
+    print("Server in ascolto su %s." % str((indirizzo, porta)))
     ricevi_connessioni(sock_listen)
 
 if __name__=='__main__':
