@@ -21,20 +21,25 @@ def ricevi_comandi1(sock_service,addr_client):
         materia=data['materia']
         voti=int(data['voti'])
         assenza=data['assenza']
-        print(voti)
-        ris=""
+    
         if voti<4: # se l'operazione da fare è +
-            ris="gravemente insufficiente "
+            valutazione="gravemente insufficiente "
         elif voti==4 or voti==5: # se l'operazione da fare è -
-            ris="insufficiente"
+            valutazione="insufficiente"
         elif voti==6: # se l'operazione da fare è *
-            ris="Sufficiente"
+            valutazione="Sufficiente"
         elif voti==7: # se l'operazione da fare è /
-            ris="Discreto"
+            valutazione="Discreto"
         elif voti==8 or voti==9:
-            ris="Buono"
+            valutazione="Buono"
         elif voti==10:
-            ris="ottimo"  
+            valutazione="ottimo"  
+
+        messaggio={'studente':studente,'materia':materia,'valutazione':valutazione}
+        print(messaggio)
+        messaggio=json.dumps(messaggio)
+        sock_service.sendall(messaggio.encode("UTF-8"))
+    sock_service.close()
         #1. recuperare dal json studente, materia, voto e assenze
 
         #2. restituire un messaggio in json contenente studente, materia e una valutazione testuale :
@@ -45,21 +50,66 @@ def ricevi_comandi1(sock_service,addr_client):
         # voto [8..9] Buono
         # voto = 10 Ottimo
         
-        print(f"{ris=}")
-        sock_service.sendall(ris.encode("UTF-8"))
-
-    sock_service.close()
 
 #Versione 2 
 def ricevi_comandi2(sock_service,addr_client):
-     pass
+    while True:
+        data=sock_service.recv(1024)
+        print(data)
+        if not data: 
+            break
+        data=data.decode()
+        data=json.loads(data)
+        studente=data['studente'] 
+        pagella=data['pagella']
+
+        assenze=0
+        media=0
+
+        for i,p in enumerate(pagella):
+            media+=int(p[1])
+            assenze+=int(p[2])
+        media=media/i
+        messaggio={'studente':studente,'media':media,'assenze':assenze}
+        print(messaggio)
+        messaggio=json.dumps(messaggio)
+        sock_service.sendall(messaggio.encode("UTF-8"))
+    sock_service.close()
+
+
+    
   #....
   #1.recuperare dal json studente e pagella
   #2. restituire studente, media dei voti e somma delle assenze :
 
 #Versione 3
 def ricevi_comandi3(sock_service,addr_client):
-    pass
+    while True:
+        data=sock_service.recv(1024)
+        print(data)
+        if not data: 
+            break
+        data=data.decode()
+        data=json.loads(data)
+
+        pp=pprint.PrettyPrinter(indent=4)
+        tabellone=[]
+        for stud in data:
+            pagella=data[stud]
+            assenze=0
+            media=0
+            for i,p in enumerate(pagella):
+                media+=int(p[1])
+                assenze+=int(p[2])
+            media=media/i
+            messaggio={'studente':studente,'media':media,'assenze':assenze}
+            tabellone.append(messaggio)
+            pp.pprint(tabellone)
+            messaggio=tabellone
+            messaggio=json.dumps(messaggio)
+            sock_service.sendall(messaggio.encode("UTF-8"))
+    sock_service.close()
+
   #....
   #1.recuperare dal json il tabellone
   #2. restituire per ogni studente la media dei voti e somma delle assenze :
@@ -73,6 +123,8 @@ def ricevi_connessioni(sock_listen):
         try:
             print("creo un thread")
             Thread(target=ricevi_comandi1,args=(sock_service,addr_client)).start()
+            #Thread(target=ricevi_comandi2,args=(sock_service,addr_client)).start()
+            #Thread(target=ricevi_comandi3,args=(sock_service,addr_client)).start()
         except:
             print("il thread non si avvia")
             sock_listen.close()
